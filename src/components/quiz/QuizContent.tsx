@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 
 import { useAppContext } from '@/hooks/context';
+import { QuizScore } from './QuizScore';
 
-export function QuizContent({ seconds, startTimer }: { seconds: number; startTimer: () => void }) {
+type Props = { seconds: number; startTimer: () => void; stopTimer: () => void };
+
+export function QuizContent({ seconds, startTimer, stopTimer }: Props) {
   const {
     quizzes,
     setQuizzes,
@@ -12,12 +15,21 @@ export function QuizContent({ seconds, startTimer }: { seconds: number; startTim
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [indexOfQuizSelected, setIndexOfQuizSelected] = useState<number | null>(null);
   const [isQuizFinished, setIsQuizFinished] = useState(false);
+  const [score, setScore] = useState(0);
   const { questions } = selectedQuiz!;
 
   useEffect(() => {
-    console.log({ seconds, currentQuestionIndex });
-    if (seconds === 0) {
+    if (seconds === 0 && !isQuizFinished) {
       if (!selectedQuiz) return;
+
+      // update statistics for current question
+      setQuizzes((quizzes) => {
+        const currentQuizzes = [...quizzes];
+        currentQuizzes[indexOfQuizSelected!].questions[currentQuestionIndex].statistics.totalAttempts += 1;
+        currentQuizzes[indexOfQuizSelected!].questions[currentQuestionIndex].statistics.incorrectAttempts += 1;
+        return currentQuizzes;
+      });
+
       if (currentQuestionIndex !== selectedQuiz?.questions.length - 1) {
         setTimeout(() => {
           setCurrentQuestionIndex((current) => current + 1);
@@ -48,33 +60,48 @@ export function QuizContent({ seconds, startTimer }: { seconds: number; startTim
   const moveToNextQuestion = () => {
     if (!selectedQuiz || indexOfQuizSelected === null) return;
 
-    // selectedQuiz?.questions[currentQuestionIndex].selectedAnswer === null
-    if (quizzes[indexOfQuizSelected].questions[currentQuestionIndex].selectedAnswer === null) {
+    const quiz = quizzes[indexOfQuizSelected].questions[currentQuestionIndex];
+
+    if (quiz.selectedAnswer === null) {
       console.log('please select an answer');
       return;
     }
 
-    quizzes[indexOfQuizSelected].questions[currentQuestionIndex].statistics.totalAttempts += 1;
+    quiz.statistics.totalAttempts += 1;
 
     if (
       selectedQuiz.questions[currentQuestionIndex].selectedAnswer !==
       selectedQuiz.questions[currentQuestionIndex].correctAnswer
     ) {
-      quizzes[indexOfQuizSelected].questions[currentQuestionIndex].statistics.incorrectAttempts += 1;
+      quiz.statistics.incorrectAttempts += 1;
       console.log('wrong answer');
+
+      if (currentQuestionIndex !== selectedQuiz.questions.length - 1) {
+        // setTimeout(() => {
+        setSelectedChoice(null);
+        setCurrentQuestionIndex((current) => current + 1);
+        // }, 1000);
+      } else {
+        setIsQuizFinished(true);
+        stopTimer();
+      }
       return;
     }
 
-    quizzes[indexOfQuizSelected].questions[currentQuestionIndex].statistics.correctAttempts += 1;
+    quiz.statistics.correctAttempts += 1;
 
-    if (currentQuestionIndex === selectedQuiz.questions.length - 1) {
+    setScore((score) => score + 1);
+
+    if (currentQuestionIndex === selectedQuiz.questions.length - 1 && quiz.correctAnswer === quiz.correctAnswer) {
       setIsQuizFinished(true);
+      stopTimer();
       return;
     }
 
     if (currentQuestionIndex < selectedQuiz.questions.length - 1) {
       setCurrentQuestionIndex((current) => current + 1);
     }
+
     setSelectedChoice(null);
   };
 
@@ -93,9 +120,16 @@ export function QuizContent({ seconds, startTimer }: { seconds: number; startTim
   };
 
   return isQuizFinished ? (
-    <div className="mt-10">
-      <h2 className="text-3xl font-bold text-center">Quiz Completed</h2>
-    </div>
+    <QuizScore
+      score={score}
+      actions={{
+        setScore,
+        setSelectedChoice,
+        setIsQuizFinished,
+        setIndexOfQuizSelected,
+        setCurrentQuestionIndex,
+      }}
+    />
   ) : (
     <>
       <div className="mt-10 flex flex-col">
@@ -115,7 +149,7 @@ export function QuizContent({ seconds, startTimer }: { seconds: number; startTim
           {questions[currentQuestionIndex].choices.map((choice, idx) => (
             <div
               key={idx}
-              className={`p-4 self-start border-2 rounded-xl ml-10 hover:border-black hover:bg-black hover:text-white select-none cursor-pointer transition-all ${
+              className={`p-4 self-start border-2 rounded-xl ml-10 hover:border-black hover:bg-black hover:text-white select-none cursor-pointer ${
                 selectedChoice === idx ? 'bg-black text-white border-black' : 'border-slate-300'
               }`}
               onClick={() => onSelectedChoice(idx)}
@@ -127,7 +161,11 @@ export function QuizContent({ seconds, startTimer }: { seconds: number; startTim
       </div>
       {/* continue */}
       <div className="flex justify-end mt-10">
-        <button onClick={moveToNextQuestion} className="p-3 px-4 text-white text-sm bg-black rounded-md">
+        <button
+          onClick={moveToNextQuestion}
+          disabled={selectedChoice === null || isQuizFinished}
+          className="p-3 px-4 text-white text-sm bg-black rounded-md"
+        >
           Submit
         </button>
       </div>

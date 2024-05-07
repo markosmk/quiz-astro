@@ -8,7 +8,7 @@ export function QuizPage() {
     initQuiz: { selectedQuiz },
   } = useAppContext();
 
-  const { seconds, timeElapsed, reStart } = useTimer({
+  const { seconds, timeElapsed, reStart, stop } = useTimer({
     timeInSeconds: 25,
     initiallyRunning: true,
   });
@@ -23,7 +23,7 @@ export function QuizPage() {
             total={selectedQuiz.questions.length}
             timer={timeElapsed}
           />
-          <QuizContent seconds={seconds} startTimer={reStart} />
+          <QuizContent seconds={seconds} startTimer={reStart} stopTimer={stop} />
         </>
       ) : (
         <>
