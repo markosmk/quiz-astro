@@ -15,7 +15,7 @@ export function ContextProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setQuizzes(quizData);
-  });
+  }, []);
 
   return (
     <AppContext.Provider
