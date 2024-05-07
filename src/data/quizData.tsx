@@ -12,7 +12,7 @@ export type Question = {
   question: string;
   choices: string[];
   correctAnswer: number;
-  selectedAnswer: null;
+  selectedAnswer: number | null;
   statistics: {
     totalAttempts: number;
     correctAttempts: number;
@@ -29,9 +29,26 @@ export const quizData: Quiz[] = [
     questions: [
       {
         id: 1,
-        question: 'Javascript is...',
-        choices: ['A: string', 'B: string', 'C: string', 'D: string'],
+        question: 'What is the purpose of Javascript?',
+        choices: [
+          'A. To create web pages',
+          'B: To add interactivity to web pages',
+          'C: To style web pages',
+          'D: To perform server-side operations on web',
+        ],
         correctAnswer: 1,
+        selectedAnswer: null,
+        statistics: {
+          totalAttempts: 3,
+          correctAttempts: 2,
+          incorrectAttempts: 1,
+        },
+      },
+      {
+        id: 2,
+        question: 'Wich of the following is not a javascript data type?',
+        choices: ['A. Number', 'B. String', 'C. Boolean', 'D. Undefined'],
+        correctAnswer: 3,
         selectedAnswer: null,
         statistics: {
           totalAttempts: 3,
