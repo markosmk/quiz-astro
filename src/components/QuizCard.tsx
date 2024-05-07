@@ -15,7 +15,6 @@ export function QuizCard(quiz: Quiz) {
 
   const handleClick = () => {
     setSelectedQuiz(quiz);
-    console.log('setSelectedQuiz', quiz);
     navigate('quiz/' + id);
   };
 
