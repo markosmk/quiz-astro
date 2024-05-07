@@ -3,7 +3,7 @@ import { StaticRouter } from 'react-router-dom/server';
 
 import { ContextProvider } from '@/hooks/context';
 import { QuizContainer } from './QuizContainer';
-import { QuizItem } from './QuizItem';
+import { QuizPage } from './quiz/QuizPage';
 
 const router = createBrowserRouter([
   {
@@ -24,7 +24,7 @@ const router = createBrowserRouter([
   },
   {
     path: 'quiz/:id',
-    element: <QuizItem />,
+    element: <QuizPage />,
   },
   {
     path: '*',

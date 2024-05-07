@@ -1,4 +1,4 @@
-import useAppContext from '@/hooks/context';
+import { useAppContext } from '@/hooks/context';
 import { useEffect } from 'react';
 import { Empty } from './Empty';
 import { QuizCard } from './QuizCard';

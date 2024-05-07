@@ -30,6 +30,6 @@ export function ContextProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function useAppContext() {
+export function useAppContext() {
   return useContext(AppContext);
 }

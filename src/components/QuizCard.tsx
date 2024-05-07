@@ -2,7 +2,7 @@ import { EllipsisIcon, MedalIcon, PlayIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { Quiz } from '@/data/quizData';
-import useAppContext from '@/hooks/context';
+import { useAppContext } from '@/hooks/context';
 import { calculateSuccessRate } from '@/lib/helpers';
 
 export function QuizCard(quiz: Quiz) {
