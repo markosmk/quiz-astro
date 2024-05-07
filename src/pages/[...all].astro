@@ -1,0 +1,13 @@
+---
+
+import type { GetStaticPaths } from "astro";
+import App from './index.astro';
+
+export const getStaticPaths = (() => [
+	{ params: { all: "about" } },
+	{ params: { all: "dashboard" } },
+	// { params: { all: "quiz/sadasd" } },
+]) satisfies GetStaticPaths;
+---
+
+<App/>
