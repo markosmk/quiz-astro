@@ -15,12 +15,9 @@ type Props = {
 };
 
 export function QuizScore({ score, actions }: Props) {
-  const {
-    initQuiz: { selectedQuiz },
-    quizzes,
-  } = useAppContext();
+  const { currentQuiz, quizzes } = useAppContext();
   const { setScore, setIsQuizFinished, setIndexOfQuizSelected, setSelectedChoice, setCurrentQuestionIndex } = actions;
-  const { questions } = selectedQuiz!;
+  const { questions } = currentQuiz!;
 
   const emojiScore = () => {
     const emojiMap = {
@@ -30,7 +27,7 @@ export function QuizScore({ score, actions }: Props) {
       4: '🙂',
       5: '😁',
     };
-    if (!selectedQuiz) return emojiMap[3];
+    if (!currentQuiz) return emojiMap[3];
     const result = Math.ceil(score / questions.length) * 100;
 
     if (result > 0 && result <= 20) return emojiMap[1];
@@ -43,7 +40,7 @@ export function QuizScore({ score, actions }: Props) {
 
   const onTryAgain = () => {
     setIsQuizFinished(false);
-    setIndexOfQuizSelected(quizzes.findIndex((quiz) => quiz.id === selectedQuiz?.id));
+    setIndexOfQuizSelected(quizzes.findIndex((quiz) => quiz.id === currentQuiz?.id));
     setSelectedChoice(null);
     setCurrentQuestionIndex(0);
     setScore(0);
