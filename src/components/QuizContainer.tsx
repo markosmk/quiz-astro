@@ -13,7 +13,7 @@ export function QuizContainer() {
     setSelectedQuiz(null);
   });
   return (
-    <div className="flex mt-10 gap-4 w-full">
+    <div className="flex mt-10 gap-4 w-full px-4">
       {quizzes.length === 0 ? (
         <Empty />
       ) : (
