@@ -1,17 +1,16 @@
-import { useAppContext } from '@/hooks/context';
 import { useEffect } from 'react';
+
+import { useAppContext } from '@/hooks/context';
 import { Empty } from './Empty';
 import { QuizCard } from './QuizCard';
 
 export function QuizContainer() {
-  const {
-    quizzes,
-    initQuiz: { setSelectedQuiz },
-  } = useAppContext();
+  const { quizzes, setCurrentQuiz } = useAppContext();
 
   useEffect(() => {
-    setSelectedQuiz(null);
-  });
+    setCurrentQuiz(null);
+  }, []);
+
   return (
     <div className="flex mt-10 gap-4 w-full px-4">
       {quizzes.length === 0 ? (
