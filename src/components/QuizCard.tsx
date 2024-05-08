@@ -1,20 +1,19 @@
-import { ActivityIcon, ChevronsRightIcon, EllipsisIcon } from 'lucide-react';
+import { ActivityIcon, ClockIcon, EllipsisIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import type { Quiz } from '@/data/quizData';
 import { useAppContext } from '@/hooks/context';
-import { calculateSuccessRate } from '@/lib/helpers';
+import { calculateSuccessRate, calculateTotalDuration } from '@/lib/helpers';
 
 export function QuizCard(quiz: Quiz) {
   const navigate = useNavigate();
   const { title, id, questions, icon } = quiz;
-  const {
-    initQuiz: { setSelectedQuiz },
-  } = useAppContext();
+  const { setCurrentQuiz } = useAppContext();
   const globalSuccessRate = calculateSuccessRate(questions);
+  const duration = calculateTotalDuration(questions);
 
   const handleClick = () => {
-    setSelectedQuiz(quiz);
+    setCurrentQuiz(quiz);
     navigate('quiz/' + id);
   };
 
@@ -33,13 +32,14 @@ export function QuizCard(quiz: Quiz) {
         <h2 className="text-xl font-bold">{title}</h2>
         <p className="text-sm font-light text-slate-500">{questions.length} question(s)</p>
         <div className="flex gap-2 justify-between">
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-1 items-center">
             <ActivityIcon className="w-4 h-4" />
-            <p className="text-xs text-slate-500">
-              Success Rate: <span className="font-bold">{globalSuccessRate}%</span>
-            </p>
+            <p className="text-xs text-slate-500">Success Rate: {globalSuccessRate}%</p>
           </div>
-          <ChevronsRightIcon className="w-6 h-6" />
+          <div className="flex gap-1 items-center">
+            <ClockIcon className="w-4 h-4" />
+            <p className="text-xs text-slate-500">{duration}</p>
+          </div>
         </div>
       </div>
     </li>
