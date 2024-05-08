@@ -1,65 +1,75 @@
 import { useEffect, useState } from 'react';
 
+import type { Quiz } from '@/data/quizData';
 import { useAppContext } from '@/hooks/context';
 import { CircularProgressBar } from './CircularProgressBar';
 import { QuizScore } from './QuizScore';
 
-type Props = { seconds: number; startTimer: () => void; stopTimer: () => void };
-
-export function QuizContent({ seconds, startTimer, stopTimer }: Props) {
+export function QuizContent({ quiz }: { quiz: Quiz }) {
   const {
     quizzes,
     setQuizzes,
-    initQuiz: { selectedQuiz, setSelectedQuiz },
+    setCurrentQuiz,
+    timer: { seconds, isRunning, startTimer, stopTimer },
   } = useAppContext();
+
+  const { questions } = quiz;
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState<number | null>(null);
   const [indexOfQuizSelected, setIndexOfQuizSelected] = useState<number | null>(null);
   const [isQuizFinished, setIsQuizFinished] = useState(false);
+
   const [score, setScore] = useState(0);
-  const { questions } = selectedQuiz!;
 
-  useEffect(() => {
-    if (seconds === 0 && !isQuizFinished) {
-      if (!selectedQuiz) return;
+  // save statistics for current question, and go to next question
+  const skipToNextQuestion = (timeout = 0) => {
+    // update statistics for incorrect answer for current question
+    setQuizzes((quizzes) => {
+      const currentQuizzes = [...quizzes];
+      currentQuizzes[indexOfQuizSelected!].questions[currentQuestionIndex].statistics.totalAttempts += 1;
+      currentQuizzes[indexOfQuizSelected!].questions[currentQuestionIndex].statistics.incorrectAttempts += 1;
+      return currentQuizzes;
+    });
 
-      // update statistics for current question
-      setQuizzes((quizzes) => {
-        const currentQuizzes = [...quizzes];
-        currentQuizzes[indexOfQuizSelected!].questions[currentQuestionIndex].statistics.totalAttempts += 1;
-        currentQuizzes[indexOfQuizSelected!].questions[currentQuestionIndex].statistics.incorrectAttempts += 1;
-        return currentQuizzes;
-      });
-
-      if (currentQuestionIndex !== selectedQuiz?.questions.length - 1) {
-        setTimeout(() => {
-          setCurrentQuestionIndex((current) => current + 1);
-        }, 1000);
-      } else {
-        setIsQuizFinished(true);
-      }
+    // if not last question go to next question
+    if (currentQuestionIndex !== questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestionIndex((current) => current + 1);
+        setSelectedChoice(null);
+      }, timeout);
+    } else {
+      setIsQuizFinished(true);
+      stopTimer();
     }
-  }, [seconds]);
+  };
 
+  // at first to get index of selected quiz
   useEffect(() => {
-    startTimer();
-  }, [currentQuestionIndex]);
-
-  useEffect(() => {
-    const quizIndexFound = selectedQuiz ? quizzes.findIndex((quiz) => quiz.id === selectedQuiz.id) : null;
+    const quizIndexFound = quiz ? quizzes.findIndex((quiz) => quiz.id === quiz.id) : null;
     setIndexOfQuizSelected(quizIndexFound);
   }, []);
 
   useEffect(() => {
+    if (isRunning && seconds === 0 && !isQuizFinished) {
+      skipToNextQuestion(1000);
+    }
+  }, [seconds]);
+
+  // when changed question re start timer
+  useEffect(() => {
+    startTimer(questions[currentQuestionIndex].timer);
+  }, [currentQuestionIndex]);
+
+  // simply to reset selected answers to current quiz
+  useEffect(() => {
     if (isQuizFinished) {
-      selectedQuiz?.questions.forEach((question) => (question.selectedAnswer = null)); // or -1?
+      questions.forEach((question) => (question.selectedAnswer = null)); // or -1?
     }
   }, [isQuizFinished]);
 
-  if (!selectedQuiz) return null;
-
   const moveToNextQuestion = () => {
-    if (!selectedQuiz || indexOfQuizSelected === null) return;
+    if (indexOfQuizSelected === null) return;
 
     const quiz = quizzes[indexOfQuizSelected].questions[currentQuestionIndex];
 
@@ -70,14 +80,11 @@ export function QuizContent({ seconds, startTimer, stopTimer }: Props) {
 
     quiz.statistics.totalAttempts += 1;
 
-    if (
-      selectedQuiz.questions[currentQuestionIndex].selectedAnswer !==
-      selectedQuiz.questions[currentQuestionIndex].correctAnswer
-    ) {
+    if (questions[currentQuestionIndex].selectedAnswer !== questions[currentQuestionIndex].correctAnswer) {
       quiz.statistics.incorrectAttempts += 1;
       console.log('wrong answer');
 
-      if (currentQuestionIndex !== selectedQuiz.questions.length - 1) {
+      if (currentQuestionIndex !== questions.length - 1) {
         // setTimeout(() => {
         setSelectedChoice(null);
         setCurrentQuestionIndex((current) => current + 1);
@@ -93,13 +100,13 @@ export function QuizContent({ seconds, startTimer, stopTimer }: Props) {
 
     setScore((score) => score + 1);
 
-    if (currentQuestionIndex === selectedQuiz.questions.length - 1 && quiz.correctAnswer === quiz.correctAnswer) {
+    if (currentQuestionIndex === questions.length - 1 && quiz.correctAnswer === quiz.correctAnswer) {
       setIsQuizFinished(true);
       stopTimer();
       return;
     }
 
-    if (currentQuestionIndex < selectedQuiz.questions.length - 1) {
+    if (currentQuestionIndex < questions.length - 1) {
       setCurrentQuestionIndex((current) => current + 1);
     }
 
@@ -107,17 +114,18 @@ export function QuizContent({ seconds, startTimer, stopTimer }: Props) {
   };
 
   const onSelectedChoice = (choiceIdx: number) => {
-    if (!selectedQuiz || indexOfQuizSelected === null) return;
+    if (indexOfQuizSelected === null) return;
 
     setSelectedChoice(choiceIdx);
 
+    // update selected answer on list quizzes
     setQuizzes((quizzes) => {
       const newQuizzes = [...quizzes];
       newQuizzes[indexOfQuizSelected].questions[currentQuestionIndex].selectedAnswer = choiceIdx;
       return newQuizzes;
     });
-
-    setSelectedQuiz(quizzes[indexOfQuizSelected]);
+    // too update current quiz
+    setCurrentQuiz(quizzes[indexOfQuizSelected]);
   };
 
   return isQuizFinished ? (
@@ -134,6 +142,7 @@ export function QuizContent({ seconds, startTimer, stopTimer }: Props) {
   ) : (
     <>
       <div className="mt-4 md:mt-10 flex flex-col relative">
+        {/* progress Score */}
         <div className="relative mx-auto my-4 md:absolute top-0 right-0">
           <CircularProgressBar
             sqSize={124}
@@ -168,8 +177,11 @@ export function QuizContent({ seconds, startTimer, stopTimer }: Props) {
           ))}
         </div>
       </div>
-      {/* continue */}
-      <div className="flex justify-end mt-10">
+      {/* actions */}
+      <div className="flex justify-end mt-10 gap-2">
+        <button onClick={() => skipToNextQuestion()} className="p-3 px-4 text-white text-sm bg-black rounded-md">
+          Skip
+        </button>
         <button
           onClick={moveToNextQuestion}
           disabled={selectedChoice === null || isQuizFinished}
@@ -177,7 +189,7 @@ export function QuizContent({ seconds, startTimer, stopTimer }: Props) {
             selectedChoice === null ? 'cursor-not-allowed opacity-50' : ' opacity-100'
           }`}
         >
-          Submit
+          {currentQuestionIndex === questions.length - 1 ? 'Submit Quiz' : 'Next Question'}
         </button>
       </div>
     </>
