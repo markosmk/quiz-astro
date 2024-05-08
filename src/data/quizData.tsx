@@ -56,6 +56,18 @@ export const quizData: Quiz[] = [
           incorrectAttempts: 1,
         },
       },
+      {
+        id: 3,
+        question: 'Which of the following is not a javascript operator?',
+        choices: ['A. +', 'B. -', 'C. *', 'D. /', 'E. **'],
+        correctAnswer: 4,
+        selectedAnswer: null,
+        statistics: {
+          totalAttempts: 3,
+          correctAttempts: 2,
+          incorrectAttempts: 1,
+        },
+      },
     ],
   },
 ];
