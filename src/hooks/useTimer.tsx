@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 
 function formatSecondsToTime(seconds: number, returnTxt = false) {
+  if (seconds === 0) return returnTxt ? '00:00:00' : 0;
   const hrs = parseInt(seconds / 3600 + '', 10);
   const mins = parseInt(seconds / 60 + '', 10);
   const secs = parseInt((seconds % 60) + '', 10);
@@ -12,28 +13,25 @@ function formatSecondsToTime(seconds: number, returnTxt = false) {
   return returnTxt ? time.hrs + ':' + time.mins + ':' + time.secs : time;
 }
 
-export const useTimer = ({ timeInSeconds = 0, initiallyRunning = false, isCountDown = true } = {}) => {
-  const [seconds, setSeconds] = useState(!isCountDown ? 0 : timeInSeconds);
-  const [isRunning, setIsRunning] = useState(initiallyRunning);
-  const [timeElapsed, setTimeElapsed] = useState(
-    !isCountDown ? '00:00:00' : (formatSecondsToTime(timeInSeconds, true) as string)
-  );
+export const useTimer = () => {
+  const [seconds, setSeconds] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+  const [timeElapsed, setTimeElapsed] = useState(formatSecondsToTime(seconds, true) as string);
 
   const tick = useCallback(() => {
     if (!isRunning) return;
-    if (isCountDown && seconds <= 0) return stop();
-    if (!isCountDown && seconds >= timeInSeconds) return pause();
-    isCountDown ? setSeconds((seconds) => seconds - 1) : setSeconds((seconds) => seconds + 1);
+    if (seconds <= 0) return setIsRunning(false);
+    setSeconds((seconds) => seconds - 1);
   }, [isRunning, seconds]);
 
   const start = () => setIsRunning(true);
   const pause = () => setIsRunning((prev) => !prev);
   const reset = () => setSeconds(0);
-  const reStart = () => {
-    setSeconds(!isCountDown ? 0 : timeInSeconds);
+  const startTimer = (time: number) => {
+    setSeconds(time);
     setIsRunning(true);
   };
-  const stop = () => {
+  const stopTimer = () => {
     setIsRunning(false);
     setSeconds(0);
   };
@@ -47,5 +45,15 @@ export const useTimer = ({ timeInSeconds = 0, initiallyRunning = false, isCountD
     setTimeElapsed(formatSecondsToTime(seconds, true) as string);
   }, [seconds]);
 
-  return { pause, reset, reStart, isRunning, seconds, timeElapsed, start, stop };
+  return {
+    startTimer,
+    stopTimer,
+    isRunning,
+    seconds,
+    timeElapsed,
+    // not used yet
+    start,
+    pause,
+    reset,
+  };
 };
