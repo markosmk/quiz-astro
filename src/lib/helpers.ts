@@ -13,3 +13,19 @@ export function calculateSuccessRate(questions: Question[]) {
   }
   return successRate;
 }
+
+export function calculateScore(questions: Question[]) {
+  let score = 0;
+  questions.forEach((question) => {
+    score += question.statistics.correctAttempts;
+  });
+  return score;
+}
+
+export function calculateTotalDuration(questions: Question[]) {
+  const durationInSeconds =
+    questions.reduce((acc, curr) => {
+      return acc + curr.timer;
+    }, 0) ?? 0;
+  return durationInSeconds < 60 ? `${durationInSeconds} sec` : Math.floor(durationInSeconds / 60) + ' min';
+}
