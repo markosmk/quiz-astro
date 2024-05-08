@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { useAppContext } from '@/hooks/context';
+import { CircularProgressBar } from './CircularProgressBar';
 import { QuizScore } from './QuizScore';
 
 type Props = { seconds: number; startTimer: () => void; stopTimer: () => void };
@@ -132,24 +133,32 @@ export function QuizContent({ seconds, startTimer, stopTimer }: Props) {
     />
   ) : (
     <>
-      <div className="mt-10 flex flex-col">
+      <div className="mt-4 md:mt-10 flex flex-col relative">
+        <div className="relative mx-auto my-4 md:absolute top-0 right-0">
+          <CircularProgressBar
+            sqSize={124}
+            strokeWidth={16}
+            percentage={(currentQuestionIndex / questions.length) * 100}
+            caption={`${score}/${questions.length}`}
+          />
+        </div>
         {/* subtitle */}
-        <span className="text-sm font-light text-slate-400 mb-2 block">
+        <span className="text-sm font-light text-slate-500 mb-2 block">
           Question {currentQuestionIndex + 1} of {questions.length}
         </span>
         {/* title */}
-        <div className="flex justify-start items-center gap-2">
-          <div className="bg-black flex justify-center items-center rounded-full w-10 h-10 text-white">
+        <div className="flex justify-start items-center gap-2 mr-[124px] pr-2">
+          <div className="bg-black hidden md:flex justify-center items-center rounded-full w-10 h-10 text-white">
             {currentQuestionIndex + 1}
           </div>
-          <p className="text-xl font-bold">{questions[currentQuestionIndex].question}</p>
+          <p className="text-lg md:text-xl font-bold">{questions[currentQuestionIndex].question}</p>
         </div>
         {/* answers choices */}
         <div className="mt-6 flex flex-col gap-2">
           {questions[currentQuestionIndex].choices.map((choice, idx) => (
             <div
               key={idx}
-              className={`p-4 self-start border-2 rounded-xl ml-10 hover:border-black hover:bg-black hover:text-white select-none cursor-pointer ${
+              className={`p-3 md:p-4 self-start border-2 rounded-xl md:ml-10 hover:border-black hover:bg-black hover:text-white select-none cursor-pointer ${
                 selectedChoice === idx ? 'bg-black text-white border-black' : 'border-slate-300'
               }`}
               onClick={() => onSelectedChoice(idx)}
@@ -164,7 +173,9 @@ export function QuizContent({ seconds, startTimer, stopTimer }: Props) {
         <button
           onClick={moveToNextQuestion}
           disabled={selectedChoice === null || isQuizFinished}
-          className="p-3 px-4 text-white text-sm bg-black rounded-md"
+          className={`p-3 px-4 text-white text-sm bg-black rounded-md ${
+            selectedChoice === null ? 'cursor-not-allowed opacity-50' : ' opacity-100'
+          }`}
         >
           Submit
         </button>
