@@ -18,7 +18,7 @@ export function QuizCard(quiz: Quiz) {
   };
 
   return (
-    <li className="rounded-xl flex flex-col border border-slate-200 bg-white">
+    <li className="rounded-xl flex flex-col border border-slate-200 bg-white w-[230px]">
       <div
         onClick={handleClick}
         className="flex flex-col gap-2 p-4 cursor-pointer hover:shadow-xl hover:shadow-slate-200 transition-shadow rounded-xl"
@@ -29,7 +29,7 @@ export function QuizCard(quiz: Quiz) {
           </div>
           {icon}
         </div>
-        <h2 className="text-xl font-bold">{title}</h2>
+        <h2 className="text-xl font-bold truncate">{title}</h2>
         <p className="text-sm font-light text-slate-500">{questions.length} question(s)</p>
         <div className="flex gap-2 justify-between">
           <div className="flex gap-1 items-center">
